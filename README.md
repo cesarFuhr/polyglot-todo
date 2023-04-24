@@ -4,5 +4,5 @@ Polyglot Todo is an programming language experiment. No rocket science, only the
 
 ## Todo:
 
-[] Write a test suite that calls an executable so it can be run for every language.
-[] Test the add a Todo item.
+- [] Write a test suite that calls an executable so it can be run for every language.
+- [] Test the add a Todo item.
