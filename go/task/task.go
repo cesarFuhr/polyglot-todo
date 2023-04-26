@@ -16,12 +16,12 @@ type Task struct {
 	DoneAt    time.Time
 }
 
-func New(title string) (*Task, error) {
+func New(title string) (Task, error) {
 	if title == "" {
-		return nil, ErrEmptyTitle
+		return Task{}, ErrEmptyTitle
 	}
 
-	return &Task{
+	return Task{
 		Done:      false,
 		Title:     title,
 		CreatedAt: time.Now(),
