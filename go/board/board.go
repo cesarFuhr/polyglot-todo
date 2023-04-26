@@ -29,3 +29,7 @@ func New(name string) (Board, error) {
 		UpdatedAt: time.Now(),
 	}, nil
 }
+
+func (b *Board) AddTask(t task.Task) {
+	b.Tasks = append(b.Tasks, t)
+}
