@@ -22,6 +22,7 @@ func New(name string) (Board, error) {
 	if name == "" {
 		return Board{}, ErrEmptyName
 	}
+
 	return Board{
 		Name:      name,
 		Tasks:     []task.Task{},
