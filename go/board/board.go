@@ -23,12 +23,13 @@ func New(name string) (Board, error) {
 		return Board{}, ErrEmptyName
 	}
 
-	return Board{
+	b := Board{
 		Name:      name,
 		Tasks:     []task.Task{},
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
-	}, nil
+	}
+	return b, nil
 }
 
 func (b *Board) AddTask(t task.Task) {

@@ -21,10 +21,11 @@ func New(title string) (Task, error) {
 		return Task{}, ErrEmptyTitle
 	}
 
-	return Task{
+	t := Task{
 		Done:      false,
 		Title:     title,
 		CreatedAt: time.Now(),
 		DoneAt:    time.Time{},
-	}, nil
+	}
+	return t, nil
 }
