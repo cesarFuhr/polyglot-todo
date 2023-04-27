@@ -14,9 +14,10 @@ var (
 
 type Board struct {
 	Name      string
-	Tasks     []task.Task
 	CreatedAt time.Time
 	UpdatedAt time.Time
+
+	tasks []task.Task
 }
 
 func New(name string) (Board, error) {
@@ -26,51 +27,58 @@ func New(name string) (Board, error) {
 
 	b := Board{
 		Name:      name,
-		Tasks:     []task.Task{},
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
+		tasks:     []task.Task{},
 	}
 	return b, nil
 }
 
+func (b *Board) GetTasks() []task.Task {
+	return b.tasks
+}
+
+func (b *Board) GetTask(position int) (task.Task, error) {
+	if len(b.tasks) == 0 || position >= len(b.tasks) {
+		return task.Task{}, ErrInvalidPosition
+	}
+
+	return b.tasks[position], nil
+}
+
+func (b *Board) InsertTask(position int, t task.Task) {
+	if len(b.tasks) == 0 || position >= len(b.tasks) {
+		b.tasks = append(b.tasks, t)
+		return
+	}
+
+	left := b.tasks[:position]
+	right := b.tasks[position:]
+
+	temp := append(left, t)
+	b.tasks = append(temp, right...)
+	b.UpdatedAt = time.Now()
+}
+
 func (b *Board) UpdateTask(position int, t task.Task) error {
-	if len(b.Tasks) == 0 || position >= len(b.Tasks) {
+	if len(b.tasks) == 0 || position >= len(b.tasks) {
 		return ErrInvalidPosition
 	}
 
-	b.Tasks[position] = t
+	b.UpdatedAt = time.Now()
+	b.tasks[position] = t
 
 	return nil
 }
 
-func (b *Board) InsertTask(position int, t task.Task) {
-	if len(b.Tasks) == 0 || position >= len(b.Tasks) {
-		b.Tasks = append(b.Tasks, t)
-		return
-	}
-
-	left := b.Tasks[:position]
-	right := b.Tasks[position:]
-
-	temp := append(left, t)
-	b.Tasks = append(temp, right...)
-}
-
 func (b *Board) RemoveTask(position int) {
-	if len(b.Tasks) == 0 || position >= len(b.Tasks)-1 {
-		b.Tasks = b.Tasks[:position]
+	if len(b.tasks) == 0 || position >= len(b.tasks)-1 {
+		b.tasks = b.tasks[:position]
 		return
 	}
 
-	left := b.Tasks[:position]
-	right := b.Tasks[position+1:]
-	b.Tasks = append(left, right...)
-}
-
-func (b *Board) GetTask(position int) (task.Task, error) {
-	if len(b.Tasks) == 0 || position >= len(b.Tasks) {
-		return task.Task{}, ErrInvalidPosition
-	}
-
-	return b.Tasks[position], nil
+	left := b.tasks[:position]
+	right := b.tasks[position+1:]
+	b.tasks = append(left, right...)
+	b.UpdatedAt = time.Now()
 }
