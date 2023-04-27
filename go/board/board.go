@@ -66,3 +66,11 @@ func (b *Board) RemoveTask(position int) {
 	right := b.Tasks[position+1:]
 	b.Tasks = append(left, right...)
 }
+
+func (b *Board) GetTask(position int) (task.Task, error) {
+	if len(b.Tasks) == 0 || position >= len(b.Tasks) {
+		return task.Task{}, ErrInvalidPosition
+	}
+
+	return b.Tasks[position], nil
+}

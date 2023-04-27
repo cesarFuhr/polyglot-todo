@@ -171,12 +171,46 @@ func TestBoardRemoveTask(t *testing.T) {
 	})
 }
 
+func TestBoardGetTask(t *testing.T) {
+	t.Run("should get a task", func(t *testing.T) {
+		b := newBoard(t)
+
+		tsk := newTask(t, 1)
+		b.InsertTask(0, tsk)
+
+		b.GetTask(0)
+
+		expected := 1
+		if expected != len(b.Tasks) {
+			t.Fatalf("expected %v, received %v", expected, len(b.Tasks))
+		}
+
+		if b.Tasks[0].Title != tsk.Title {
+			t.Fatalf("expected title %v, received title %v", tsk.Title, b.Tasks[0].Title)
+		}
+	})
+
+	t.Run("should return an invalid position error", func(t *testing.T) {
+		b := newBoard(t)
+
+		_, err := b.GetTask(1)
+
+		expected := board.ErrInvalidPosition
+
+		if expected != err {
+			t.Fatalf("expected %v, received %v", expected, err)
+		}
+	})
+
+}
+
 func TestBoardUpdateTask(t *testing.T) {
 	t.Run("should update task", func(t *testing.T) {
 		b := newBoard(t)
 
 		tsk := newTask(t, 1)
 		b.InsertTask(0, tsk)
+
 		expectedTitle := "title updated"
 		b.UpdateTask(0, task.Task{Title: expectedTitle})
 
@@ -193,11 +227,12 @@ func TestBoardUpdateTask(t *testing.T) {
 	t.Run("should return an invalid position error", func(t *testing.T) {
 		b := newBoard(t)
 
-		b.UpdateTask(1, task.Task{})
+		err := b.UpdateTask(1, task.Task{})
 
-		expected := 0
-		if expected != len(b.Tasks) {
-			t.Fatalf("expected %v, received %v", expected, len(b.Tasks))
+		expected := board.ErrInvalidPosition
+
+		if expected != err {
+			t.Fatalf("expected %v, received %v", expected, err)
 		}
 	})
 }
