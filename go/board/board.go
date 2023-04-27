@@ -8,7 +8,8 @@ import (
 )
 
 var (
-	ErrEmptyName = errors.New("name should not be empty")
+	ErrEmptyName       = errors.New("name should not be empty")
+	ErrInvalidPosition = errors.New("invalid board position")
 )
 
 type Board struct {
@@ -32,6 +33,36 @@ func New(name string) (Board, error) {
 	return b, nil
 }
 
-func (b *Board) AddTask(t task.Task) {
-	b.Tasks = append(b.Tasks, t)
+func (b *Board) UpdateTask(position int, t task.Task) error {
+	if len(b.Tasks) == 0 || position >= len(b.Tasks) {
+		return ErrInvalidPosition
+	}
+
+	b.Tasks[position] = t
+
+	return nil
+}
+
+func (b *Board) InsertTask(position int, t task.Task) {
+	if len(b.Tasks) == 0 || position >= len(b.Tasks) {
+		b.Tasks = append(b.Tasks, t)
+		return
+	}
+
+	left := b.Tasks[:position]
+	right := b.Tasks[position:]
+
+	temp := append(left, t)
+	b.Tasks = append(temp, right...)
+}
+
+func (b *Board) RemoveTask(position int) {
+	if len(b.Tasks) == 0 || position >= len(b.Tasks)-1 {
+		b.Tasks = b.Tasks[:position]
+		return
+	}
+
+	left := b.Tasks[:position]
+	right := b.Tasks[position+1:]
+	b.Tasks = append(left, right...)
 }
