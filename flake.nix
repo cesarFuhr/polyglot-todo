@@ -27,6 +27,7 @@
                   p.godef
                   p.golint
                   p.go-mockery
+                  p.act
                 ];
             };
         });
