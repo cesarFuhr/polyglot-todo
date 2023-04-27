@@ -60,7 +60,8 @@ func TestBoardInsertTask(t *testing.T) {
 			t.Fatalf("expected %v, received %v", expected, len(b.GetTasks()))
 		}
 
-		if b.GetTasks()[0].Title != tsk.Title {
+		actualTask, _ := b.GetTask(0)
+		if actualTask.Title != tsk.Title {
 			t.Fatalf("expected title %v, received title %v", b.GetTasks()[0].Title, tsk.Title)
 		}
 	})
@@ -81,8 +82,9 @@ func TestBoardInsertTask(t *testing.T) {
 		}
 
 		expectedTitle := tsk.Title
-		if b.GetTasks()[1].Title != expectedTitle {
-			t.Fatalf("expected title %v, received title %v", expectedTitle, b.GetTasks()[1].Title)
+		actualTask, _ := b.GetTask(1)
+		if actualTask.Title != expectedTitle {
+			t.Fatalf("expected title %v, received title %v", expectedTitle, actualTask.Title)
 		}
 	})
 
@@ -105,7 +107,8 @@ func TestBoardInsertTask(t *testing.T) {
 		}
 
 		expectedTitle := middleTask.Title
-		if b.GetTasks()[1].Title != expectedTitle {
+		actualTask, _ := b.GetTask(1)
+		if actualTask.Title != expectedTitle {
 			t.Fatalf("expected title %v, received title %v", expectedTitle, b.GetTasks()[1].Title)
 		}
 	})
@@ -143,8 +146,9 @@ func TestBoardRemoveTask(t *testing.T) {
 		}
 
 		expectedTitle := tsk.Title
-		if b.GetTasks()[0].Title != expectedTitle {
-			t.Fatalf("expected title %v, received title %v", expectedTitle, b.GetTasks()[0].Title)
+		actualTask, _ := b.GetTask(0)
+		if actualTask.Title != expectedTitle {
+			t.Fatalf("expected title %v, received title %v", expectedTitle, actualTask.Title)
 		}
 	})
 
@@ -165,8 +169,9 @@ func TestBoardRemoveTask(t *testing.T) {
 		}
 
 		expectedTitle := tsk2.Title
-		if b.GetTasks()[0].Title != expectedTitle {
-			t.Fatalf("expected title %v, received title %v", expectedTitle, b.GetTasks()[0].Title)
+		actualTask, _ := b.GetTask(0)
+		if actualTask.Title != expectedTitle {
+			t.Fatalf("expected title %v, received title %v", expectedTitle, actualTask.Title)
 		}
 	})
 }
@@ -185,8 +190,9 @@ func TestBoardGetTask(t *testing.T) {
 			t.Fatalf("expected %v, received %v", expected, len(b.GetTasks()))
 		}
 
-		if b.GetTasks()[0].Title != tsk.Title {
-			t.Fatalf("expected title %v, received title %v", tsk.Title, b.GetTasks()[0].Title)
+		actualTask, _ := b.GetTask(0)
+		if actualTask.Title != tsk.Title {
+			t.Fatalf("expected title %v, received title %v", tsk.Title, actualTask.Title)
 		}
 	})
 
@@ -219,8 +225,9 @@ func TestBoardUpdateTask(t *testing.T) {
 			t.Fatalf("expected %v, received %v", expected, len(b.GetTasks()))
 		}
 
-		if b.GetTasks()[0].Title != expectedTitle {
-			t.Fatalf("expected title %v, received title %v", expectedTitle, b.GetTasks()[0].Title)
+		actualTask, _ := b.GetTask(0)
+		if actualTask.Title != expectedTitle {
+			t.Fatalf("expected title %v, received title %v", expectedTitle, actualTask.Title)
 		}
 	})
 
