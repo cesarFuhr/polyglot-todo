@@ -21,11 +21,8 @@ jobs:
       with:
         go-version: 1.20
 
-    - name: Move to the Go dir
-      run: cd ./go
-
     - name: Build
-      run: go build -v ./
+      run: go build -v ./go
 
     - name: Test
-      run: go test -v ./...
+      run: go test -v ./go/...
