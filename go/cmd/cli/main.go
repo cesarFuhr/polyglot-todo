@@ -11,9 +11,24 @@ func main() {
 	}
 }
 
-func run() error {
+const (
+	CmdTask = "task"
+)
 
+func run() error {
 	flag.Parse()
+
+	// Branch to the requested command.
+	switch flag.Arg(0) {
+	case CmdTask:
+		c := NewCommandTask(flag.Args())
+
+	default:
+		flag.Usage()
+	}
 
 	return nil
 }
+
+// Create a task.
+// ./todo task New task name
