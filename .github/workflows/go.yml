@@ -23,7 +23,7 @@ jobs:
 
     - name: Build
       working-directory: ./go
-      run: go build -v -o todo ./
+      run: make build
 
     - name: Test
       working-directory: ./go
