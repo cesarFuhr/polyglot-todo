@@ -36,9 +36,28 @@ func run() error {
 	flags := newFlags(f)
 	log.Printf("%+v", flags)
 
+	file, err := os.OpenFile(".todo.json", os.O_CREATE|os.O_RDWR, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	fileInfo, err := file.Stat()
+	if err != nil {
+		return err
+	}
+
+	if fileInfo.Size() == 0 {
+		_, err := file.WriteString("null")
+		if err != nil {
+			return err
+		}
+		file.Seek(0, 0)
+	}
+
 	switch {
 	case flags.add:
-		AddTask(nil, strings.Join(f.Args(), " "))
+		return AddTask(file, strings.Join(f.Args(), " "))
 	}
 
 	return nil
