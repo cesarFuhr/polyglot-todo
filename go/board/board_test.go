@@ -48,11 +48,11 @@ func TestBoardInsertTask(t *testing.T) {
 	t.Run("should add a task to the top of the board", func(t *testing.T) {
 		b := newBoard(t)
 
-		tsk := newTask(t, 1)
-		b.InsertTask(0, tsk)
+		tsk1 := newTask(t, 1)
+		b.InsertTask(0, tsk1)
 
-		tsk = newTask(t, 2)
-		b.InsertTask(0, tsk)
+		tsk2 := newTask(t, 2)
+		b.InsertTask(0, tsk2)
 
 		expected := 2
 
@@ -60,9 +60,13 @@ func TestBoardInsertTask(t *testing.T) {
 			t.Fatalf("expected %v, received %v", expected, len(b.GetTasks()))
 		}
 
-		actualTask, _ := b.GetTask(0)
-		if actualTask.Title != tsk.Title {
-			t.Fatalf("expected title %v, received title %v", b.GetTasks()[0].Title, tsk.Title)
+		actualTop, _ := b.GetTask(0)
+		if actualTop.Title != tsk2.Title {
+			t.Fatalf("expected title %v, received title %v", tsk2.Title, b.GetTasks()[0].Title)
+		}
+		actualBottom, _ := b.GetTask(1)
+		if actualBottom.Title != tsk1.Title {
+			t.Fatalf("expected title %v, received title %v", tsk1.Title, b.GetTasks()[1].Title)
 		}
 	})
 

@@ -54,8 +54,12 @@ func (b *Board) InsertTask(position int, t task.Task) {
 	left := b.Tasks[:position]
 	right := b.Tasks[position:]
 
-	temp := append(left, t)
-	b.Tasks = append(temp, right...)
+	result := make([]task.Task, 0, len(b.Tasks)+1)
+	result = append(result, left...)
+	result = append(result, t)
+	result = append(result, right...)
+
+	b.Tasks = result
 	b.UpdatedAt = time.Now()
 }
 
