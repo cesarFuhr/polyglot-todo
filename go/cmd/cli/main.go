@@ -106,16 +106,17 @@ func loadBoard(path string) (*board.Board, error) {
 }
 
 func saveBoard(path string, b *board.Board) error {
-	file, err := os.OpenFile(".todo.json", os.O_WRONLY, 0644)
+	file, err := os.OpenFile(path, os.O_WRONLY, 0644)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
 
-	err = json.NewEncoder(file).Encode(b)
+	bts, err := json.MarshalIndent(b, "", "  ")
 	if err != nil {
 		return fmt.Errorf("encoding board %w", err)
 	}
 
-	return nil
+	_, err = file.Write(bts)
+	return err
 }
