@@ -20,12 +20,13 @@ func AddTask(b *board.Board, title string) error {
 
 func ListTasks(b *board.Board) {
 	fmt.Println(" ", b.Name)
-	for _, t := range b.Tasks {
+	for i, t := range b.Tasks {
+		fmt.Print(i+1, " ")
 		if t.Done {
-			fmt.Print("☑")
+			fmt.Print("☑ ")
 		} else {
-			fmt.Print("☐")
+			fmt.Print("☐ ")
 		}
-		fmt.Println(" ", t.Title)
+		fmt.Println(t.Title)
 	}
 }
