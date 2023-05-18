@@ -16,8 +16,7 @@ type Board struct {
 	Name      string
 	CreatedAt time.Time
 	UpdatedAt time.Time
-
-	tasks []task.Task
+	Tasks     []task.Task
 }
 
 func New(name string) (Board, error) {
@@ -29,56 +28,56 @@ func New(name string) (Board, error) {
 		Name:      name,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
-		tasks:     []task.Task{},
+		Tasks:     []task.Task{},
 	}
 	return b, nil
 }
 
 func (b *Board) GetTasks() []task.Task {
-	return b.tasks
+	return b.Tasks
 }
 
 func (b *Board) GetTask(position int) (task.Task, error) {
-	if len(b.tasks) == 0 || position >= len(b.tasks) {
+	if len(b.Tasks) == 0 || position >= len(b.Tasks) {
 		return task.Task{}, ErrInvalidPosition
 	}
 
-	return b.tasks[position], nil
+	return b.Tasks[position], nil
 }
 
 func (b *Board) InsertTask(position int, t task.Task) {
-	if len(b.tasks) == 0 || position >= len(b.tasks) {
-		b.tasks = append(b.tasks, t)
+	if len(b.Tasks) == 0 || position >= len(b.Tasks) {
+		b.Tasks = append(b.Tasks, t)
 		return
 	}
 
-	left := b.tasks[:position]
-	right := b.tasks[position:]
+	left := b.Tasks[:position]
+	right := b.Tasks[position:]
 
 	temp := append(left, t)
-	b.tasks = append(temp, right...)
+	b.Tasks = append(temp, right...)
 	b.UpdatedAt = time.Now()
 }
 
 func (b *Board) UpdateTask(position int, t task.Task) error {
-	if len(b.tasks) == 0 || position >= len(b.tasks) {
+	if len(b.Tasks) == 0 || position >= len(b.Tasks) {
 		return ErrInvalidPosition
 	}
 
 	b.UpdatedAt = time.Now()
-	b.tasks[position] = t
+	b.Tasks[position] = t
 
 	return nil
 }
 
 func (b *Board) RemoveTask(position int) {
-	if len(b.tasks) == 0 || position >= len(b.tasks)-1 {
-		b.tasks = b.tasks[:position]
+	if len(b.Tasks) == 0 || position >= len(b.Tasks)-1 {
+		b.Tasks = b.Tasks[:position]
 		return
 	}
 
-	left := b.tasks[:position]
-	right := b.tasks[position+1:]
-	b.tasks = append(left, right...)
+	left := b.Tasks[:position]
+	right := b.Tasks[position+1:]
+	b.Tasks = append(left, right...)
 	b.UpdatedAt = time.Now()
 }

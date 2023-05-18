@@ -1,11 +1,16 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"flag"
+	"fmt"
+	"io"
 	"log"
 	"os"
 	"strings"
+
+	"github.com/cesarFuhr/go/polyglot-todo/board"
 )
 
 func main() {
@@ -36,31 +41,17 @@ func run() error {
 	flags := newFlags(f)
 	log.Printf("%+v", flags)
 
-	file, err := os.OpenFile(".todo.json", os.O_CREATE|os.O_RDWR, 0644)
+	b, err := loadBoard(".todo.json")
 	if err != nil {
 		return err
-	}
-	defer file.Close()
-
-	fileInfo, err := file.Stat()
-	if err != nil {
-		return err
-	}
-
-	if fileInfo.Size() == 0 {
-		_, err := file.WriteString("null")
-		if err != nil {
-			return err
-		}
-		file.Seek(0, 0)
 	}
 
 	switch {
 	case flags.add:
-		return AddTask(file, strings.Join(f.Args(), " "))
+		AddTask(b, strings.Join(f.Args(), " "))
 	}
 
-	return nil
+	return saveBoard(".todo.json", b)
 }
 
 func validateFlags(f *flag.FlagSet) error {
@@ -89,4 +80,42 @@ func newFlags(f *flag.FlagSet) flags {
 	add := f.Lookup("a")
 	log.Printf("%+v", add)
 	return flags{add: add.Value.String() == "true"}
+}
+
+func loadBoard(path string) (*board.Board, error) {
+	file, err := os.OpenFile(path, os.O_CREATE|os.O_RDONLY, 0644)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	var b board.Board
+	err = json.NewDecoder(file).Decode(&b)
+	if err != nil && err != io.EOF {
+		return nil, fmt.Errorf("decoding board %w", err)
+	}
+
+	if b.Name == "" {
+		b, err = board.New("TODO")
+		if err != nil {
+			return nil, fmt.Errorf("creating a board: %w", err)
+		}
+	}
+
+	return &b, nil
+}
+
+func saveBoard(path string, b *board.Board) error {
+	file, err := os.OpenFile(".todo.json", os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	err = json.NewEncoder(file).Encode(b)
+	if err != nil {
+		return fmt.Errorf("encoding board %w", err)
+	}
+
+	return nil
 }
