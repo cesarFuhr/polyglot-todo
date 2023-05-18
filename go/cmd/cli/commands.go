@@ -17,3 +17,15 @@ func AddTask(b *board.Board, title string) error {
 
 	return nil
 }
+
+func ListTasks(b *board.Board) {
+	fmt.Println(" ", b.Name)
+	for _, t := range b.Tasks {
+		if t.Done {
+			fmt.Print("☑")
+		} else {
+			fmt.Print("☐")
+		}
+		fmt.Println(" ", t.Title)
+	}
+}

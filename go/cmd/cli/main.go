@@ -39,7 +39,8 @@ func run() error {
 	}
 
 	flags := newFlags(f)
-	log.Printf("%+v", flags)
+	fmt.Println()
+	fmt.Println()
 
 	b, err := loadBoard(".todo.json")
 	if err != nil {
@@ -49,6 +50,8 @@ func run() error {
 	switch {
 	case flags.add:
 		AddTask(b, strings.Join(f.Args(), " "))
+	case flags.list:
+		ListTasks(b)
 	}
 
 	return saveBoard(".todo.json", b)
@@ -78,8 +81,12 @@ func newFlags(f *flag.FlagSet) flags {
 	}
 
 	add := f.Lookup("a")
-	log.Printf("%+v", add)
-	return flags{add: add.Value.String() == "true"}
+	list := f.Lookup("l")
+
+	return flags{
+		add:  add.Value.String() == "true",
+		list: list.Value.String() == "true",
+	}
 }
 
 func loadBoard(path string) (*board.Board, error) {
