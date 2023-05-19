@@ -54,6 +54,8 @@ func run() error {
 		err = Add(b, strings.Join(f.Args(), " "))
 	case flags.done != 0:
 		err = Done(b, flags.done)
+	case flags.del != 0:
+		err = Delete(b, flags.del)
 	}
 	if err != nil {
 		return fmt.Errorf("executing command: %w", err)
@@ -74,7 +76,7 @@ type flags struct {
 	list   bool
 	add    bool
 	done   int
-	delete int
+	del    int
 	move   int
 	update int
 }
@@ -88,11 +90,13 @@ func newFlags(f *flag.FlagSet) flags {
 	add := f.Lookup("a")
 	list := f.Lookup("l")
 	done := f.Lookup("d").Value.(flag.Getter).Get().(int)
+	del := f.Lookup("D").Value.(flag.Getter).Get().(int)
 
 	return flags{
 		add:  add.Value.String() == "true",
 		list: list.Value.String() == "true",
 		done: done,
+		del:  del,
 	}
 }
 

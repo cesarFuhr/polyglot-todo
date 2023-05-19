@@ -46,3 +46,15 @@ func Done(b *board.Board, pos int) error {
 
 	return nil
 }
+
+func Delete(b *board.Board, pos int) error {
+	pos = pos - 1
+	_, err := b.GetTask(pos)
+	if err != nil {
+		return fmt.Errorf("fetching task: %w", err)
+	}
+
+	b.RemoveTask(pos)
+
+	return nil
+}
