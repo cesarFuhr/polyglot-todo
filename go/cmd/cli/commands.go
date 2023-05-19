@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/cesarFuhr/go/polyglot-todo/board"
 	"github.com/cesarFuhr/go/polyglot-todo/task"
@@ -39,6 +40,7 @@ func Done(b *board.Board, pos int) error {
 	}
 
 	t.Done = !t.Done
+	t.DoneAt = time.Now()
 	err = b.UpdateTask(pos, t)
 	if err != nil {
 		return fmt.Errorf("updating task: %w", err)
