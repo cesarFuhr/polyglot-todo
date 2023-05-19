@@ -127,9 +127,14 @@ func saveBoard(path string, b *board.Board) error {
 	}
 	defer file.Close()
 
+	err = file.Truncate(0)
+	if err != nil {
+		return fmt.Errorf("truncating file: %w", err)
+	}
+
 	bts, err := json.MarshalIndent(b, "", "  ")
 	if err != nil {
-		return fmt.Errorf("encoding board %w", err)
+		return fmt.Errorf("encoding board: %w", err)
 	}
 
 	_, err = file.Write(bts)
