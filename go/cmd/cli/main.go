@@ -23,7 +23,7 @@ func run() error {
 	f := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	f.Bool("l", false, "Lists all current tasks.")
 	f.Bool("a", false, "Adds a new task to the board.")
-	f.Int("d", 0, "Marks a task as done.")
+	f.Int("d", 0, "Toggles task done status.")
 	f.Int("D", 0, "Deletes a task.")
 	f.Int("m", 0, "Moves a task to the given poisition.")
 	f.Int("u", 0, "Updates the title of the given task.")
@@ -48,10 +48,15 @@ func run() error {
 	}
 
 	switch {
-	case flags.add:
-		AddTask(b, strings.Join(f.Args(), " "))
 	case flags.list:
-		ListTasks(b)
+		List(b)
+	case flags.add:
+		err = Add(b, strings.Join(f.Args(), " "))
+	case flags.done != 0:
+		err = Done(b, flags.done)
+	}
+	if err != nil {
+		return fmt.Errorf("executing command: %w", err)
 	}
 
 	return saveBoard(".todo.json", b)
@@ -82,10 +87,12 @@ func newFlags(f *flag.FlagSet) flags {
 
 	add := f.Lookup("a")
 	list := f.Lookup("l")
+	done := f.Lookup("d").Value.(flag.Getter).Get().(int)
 
 	return flags{
 		add:  add.Value.String() == "true",
 		list: list.Value.String() == "true",
+		done: done,
 	}
 }
 

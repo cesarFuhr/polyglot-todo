@@ -7,7 +7,7 @@ import (
 	"github.com/cesarFuhr/go/polyglot-todo/task"
 )
 
-func AddTask(b *board.Board, title string) error {
+func Add(b *board.Board, title string) error {
 	t, err := task.New(title)
 	if err != nil {
 		return fmt.Errorf("creating a new task %w", err)
@@ -18,7 +18,7 @@ func AddTask(b *board.Board, title string) error {
 	return nil
 }
 
-func ListTasks(b *board.Board) {
+func List(b *board.Board) {
 	fmt.Println(" ", b.Name)
 	for i, t := range b.Tasks {
 		fmt.Print(i+1, " ")
@@ -29,4 +29,20 @@ func ListTasks(b *board.Board) {
 		}
 		fmt.Println(t.Title)
 	}
+}
+
+func Done(b *board.Board, pos int) error {
+	pos = pos - 1
+	t, err := b.GetTask(pos)
+	if err != nil {
+		return fmt.Errorf("fetching task: %w", err)
+	}
+
+	t.Done = !t.Done
+	err = b.UpdateTask(pos, t)
+	if err != nil {
+		return fmt.Errorf("updating task: %w", err)
+	}
+
+	return nil
 }
