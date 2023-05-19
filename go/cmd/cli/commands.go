@@ -58,3 +58,19 @@ func Delete(b *board.Board, pos int) error {
 
 	return nil
 }
+
+func Update(b *board.Board, pos int, title string) error {
+	pos = pos - 1
+	t, err := b.GetTask(pos)
+	if err != nil {
+		return fmt.Errorf("fetching task: %w", err)
+	}
+
+	t.Title = title
+	err = b.UpdateTask(pos, t)
+	if err != nil {
+		return fmt.Errorf("updating task: %w", err)
+	}
+
+	return nil
+}

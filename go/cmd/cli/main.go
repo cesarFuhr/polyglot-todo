@@ -29,18 +29,11 @@ func run() error {
 	f.Int("u", 0, "Updates the title of the given task.")
 	f.Parse(os.Args[1:])
 
-	// Debugging: print all flags value
-	f.VisitAll(func(f *flag.Flag) {
-		log.Printf("%+v", f)
-	})
-
 	if err := validateFlags(f); err != nil {
 		return err
 	}
 
 	flags := newFlags(f)
-	fmt.Println()
-	fmt.Println()
 
 	b, err := loadBoard(".todo.json")
 	if err != nil {
@@ -56,6 +49,8 @@ func run() error {
 		err = Done(b, flags.done)
 	case flags.del != 0:
 		err = Delete(b, flags.del)
+	case flags.update != 0:
+		err = Update(b, flags.update, strings.Join(f.Args(), " "))
 	}
 	if err != nil {
 		return fmt.Errorf("executing command: %w", err)
@@ -91,12 +86,14 @@ func newFlags(f *flag.FlagSet) flags {
 	list := f.Lookup("l")
 	done := f.Lookup("d").Value.(flag.Getter).Get().(int)
 	del := f.Lookup("D").Value.(flag.Getter).Get().(int)
+	update := f.Lookup("u").Value.(flag.Getter).Get().(int)
 
 	return flags{
-		add:  add.Value.String() == "true",
-		list: list.Value.String() == "true",
-		done: done,
-		del:  del,
+		add:    add.Value.String() == "true",
+		list:   list.Value.String() == "true",
+		done:   done,
+		del:    del,
+		update: update,
 	}
 }
 
