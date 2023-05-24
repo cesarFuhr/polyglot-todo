@@ -3,13 +3,17 @@
 
   inputs.nixpkgs.url = "nixpkgs/nixos-22.11";
   inputs.flake-utils.url = "github:numtide/flake-utils";
+  inputs.rust-overlay.url = "github:oxalica/rust-overlay";
 
-  outputs = { self, nixpkgs, flake-utils }:
+  outputs = { self, nixpkgs, flake-utils, rust-overlay }:
     # Add dependencies that are only needed for development
     flake-utils.lib.eachDefaultSystem
       (system:
         let
-          pkgs = nixpkgs.legacyPackages.${system};
+          overlays = [ (import rust-overlay) ];
+          pkgs = import nixpkgs {
+            inherit system overlays;
+          };
         in
         {
           devShells.default = let p = pkgs; in
@@ -27,7 +31,8 @@
                   p.godef
                   p.golint
                   p.go-mockery
-                  p.act
+                  p.rust-bin.stable.latest.default
+                  p.rust-analyzer
                 ];
             };
         });
