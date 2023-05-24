@@ -33,6 +33,17 @@ impl Board {
     pub fn get_task(&mut self, position: usize) -> Option<&Task> {
         self.tasks.get(position)
     }
+
+    pub fn update_task(&mut self, position: usize, task: &Task) -> Result<(), String> {
+        if position >= self.tasks.len() {
+            return Err("invalid board position".to_owned());
+        }
+
+        self.updated_at = Instant::now();
+        self.tasks[position] = task.to_owned();
+
+        Ok(())
+    }
 }
 
 #[cfg(test)]
@@ -178,5 +189,40 @@ mod test {
         let opt = b.get_task(1);
 
         assert!(opt.is_none());
+    }
+
+    #[test]
+    fn update_task() {
+        let board = super::Board::new("test board".to_string());
+        assert!(board.is_ok());
+
+        let mut b = board.unwrap();
+
+        let t = Task::new("task 1".to_string()).unwrap();
+        b.insert_task(0, &t);
+
+        let t = Task::new("task updated".to_string()).unwrap();
+        let result = b.update_task(0, &t);
+
+        assert!(result.is_ok());
+        let updated = b.get_task(0).unwrap();
+        assert_eq!(t.title, updated.title);
+    }
+
+    #[test]
+    fn update_task_invalid_position() {
+        let board = super::Board::new("test board".to_string());
+        assert!(board.is_ok());
+
+        let mut b = board.unwrap();
+
+        let t = Task::new("task 1".to_string()).unwrap();
+        b.insert_task(0, &t);
+
+        let t = Task::new("task updated".to_string()).unwrap();
+        let result = b.update_task(12, &t);
+
+        assert!(result.is_err());
+        assert_eq!("invalid board position", result.err().unwrap())
     }
 }
