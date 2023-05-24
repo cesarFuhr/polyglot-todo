@@ -20,6 +20,7 @@
             pkgs.mkShell {
               buildInputs =
                 [
+                  p.act
                   p.go_1_20
                   p.gopls
                   p.gotools
