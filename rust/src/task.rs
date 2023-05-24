@@ -1,6 +1,6 @@
 use std::time::Instant;
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Task {
     pub done: bool,
     pub title: String,
@@ -14,12 +14,12 @@ impl Task {
             return Err("title must not be empty".to_string());
         }
 
-        return Ok(Self {
+        Ok(Self {
             done: false,
             title,
             created_at: Instant::now(),
             done_at: Instant::now(),
-        });
+        })
     }
 }
 

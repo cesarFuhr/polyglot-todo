@@ -1,6 +1,7 @@
-use crate::task::{Task};
+use crate::task::Task;
 use std::time::Instant;
 
+#[derive(Debug)]
 struct Board {
     pub name: String,
     pub created_at: Instant,
@@ -22,15 +23,15 @@ impl Board {
         })
     }
 
-    pub fn insert_task(&mut self, position: usize, task: Task) {
+    pub fn insert_task(&mut self, position: usize, task: &Task) {
         if position >= self.tasks.len() {
-            return self.tasks.push(task);
+            return self.tasks.push(task.to_owned());
         }
-        self.tasks.insert(position, task)
+        self.tasks.insert(position, task.to_owned())
     }
 
-    pub fn get_task(&mut self, position: usize) -> Result<Task,String> {
-        
+    pub fn get_task(&mut self, position: usize) -> Option<&Task> {
+        self.tasks.get(position)
     }
 }
 
@@ -66,7 +67,7 @@ mod test {
         let mut b = board.unwrap();
         let t = Task::new("task 1".to_string()).unwrap();
 
-        b.insert_task(0, t);
+        b.insert_task(0, &t);
 
         assert_eq!(b.tasks.len(), 1);
         assert_eq!(b.tasks[0].title, "task 1");
@@ -80,10 +81,10 @@ mod test {
         let mut b = board.unwrap();
 
         let t = Task::new("task 1".to_string()).unwrap();
-        b.insert_task(0, t);
+        b.insert_task(0, &t);
 
         let t = Task::new("task 2".to_string()).unwrap();
-        b.insert_task(0, t);
+        b.insert_task(0, &t);
 
         assert_eq!(b.tasks.len(), 2);
         assert_eq!(b.tasks[0].title, "task 2");
@@ -98,10 +99,10 @@ mod test {
         let mut b = board.unwrap();
 
         let t = Task::new("task 1".to_string()).unwrap();
-        b.insert_task(0, t);
+        b.insert_task(0, &t);
 
         let t = Task::new("task 2".to_string()).unwrap();
-        b.insert_task(1, t);
+        b.insert_task(1, &t);
 
         assert_eq!(b.tasks.len(), 2);
         assert_eq!(b.tasks[0].title, "task 1");
@@ -116,13 +117,13 @@ mod test {
         let mut b = board.unwrap();
 
         let t = Task::new("task 1".to_string()).unwrap();
-        b.insert_task(0, t);
+        b.insert_task(0, &t);
 
         let t = Task::new("task 2".to_string()).unwrap();
-        b.insert_task(1, t);
+        b.insert_task(1, &t);
 
         let t = Task::new("task 3".to_string()).unwrap();
-        b.insert_task(1, t);
+        b.insert_task(1, &t);
 
         assert_eq!(b.tasks.len(), 3);
         assert_eq!(b.tasks[0].title, "task 1");
@@ -138,10 +139,10 @@ mod test {
         let mut b = board.unwrap();
 
         let t = Task::new("task 1".to_string()).unwrap();
-        b.insert_task(0, t);
+        b.insert_task(0, &t);
 
         let t = Task::new("task 2".to_string()).unwrap();
-        b.insert_task(10, t);
+        b.insert_task(10, &t);
 
         assert_eq!(b.tasks.len(), 2);
         assert_eq!(b.tasks[0].title, "task 1");
@@ -156,11 +157,26 @@ mod test {
         let mut b = board.unwrap();
 
         let t = Task::new("task 1".to_string()).unwrap();
-        b.insert_task(0, t);
+        b.insert_task(0, &t);
 
-        let result = b.get_task(0);
+        let opt = b.get_task(0);
 
-        assert!(result.is_ok())
-        assert_eq!(t, result.unwrap())
+        assert!(opt.is_some());
+        assert_eq!(t.title, opt.unwrap().title);
+    }
+
+    #[test]
+    fn get_task_invalid_position() {
+        let board = super::Board::new("test board".to_string());
+        assert!(board.is_ok());
+
+        let mut b = board.unwrap();
+
+        let t = Task::new("task 1".to_string()).unwrap();
+        b.insert_task(0, &t);
+
+        let opt = b.get_task(1);
+
+        assert!(opt.is_none());
     }
 }
