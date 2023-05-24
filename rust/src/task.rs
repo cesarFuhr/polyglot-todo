@@ -14,7 +14,12 @@ impl Task {
             return Err("title must not be empty".to_string());
         }
 
-        return Ok(Self { done: false, title, created_at: Instant::now(), done_at: Instant::now() });
+        return Ok(Self {
+            done: false,
+            title,
+            created_at: Instant::now(),
+            done_at: Instant::now(),
+        });
     }
 }
 
@@ -34,7 +39,7 @@ mod tests {
         let task = super::Task::new("".to_string());
 
         if let Err(e) = task {
-            assert_eq!("title must not be empty".to_string(), e.to_string());
+            assert_eq!("title must not be empty".to_string(), e);
         }
     }
 }

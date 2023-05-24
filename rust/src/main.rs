@@ -1,3 +1,4 @@
+mod board;
 mod task;
 
 fn main() {
