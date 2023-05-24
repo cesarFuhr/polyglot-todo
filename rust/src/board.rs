@@ -44,6 +44,13 @@ impl Board {
 
         Ok(())
     }
+
+    pub fn remove_task(&mut self, position: usize) {
+        if position >= self.tasks.len() {
+            return;
+        }
+        self.tasks.remove(position);
+    }
 }
 
 #[cfg(test)]
@@ -224,5 +231,33 @@ mod test {
 
         assert!(result.is_err());
         assert_eq!("invalid board position", result.err().unwrap())
+    }
+
+    #[test]
+    fn remove_task() {
+        let board = super::Board::new("test board".to_string());
+        assert!(board.is_ok());
+
+        let mut b = board.unwrap();
+
+        let t = Task::new("task 1".to_string()).unwrap();
+        b.insert_task(0, &t);
+        b.remove_task(0);
+
+        assert!(b.get_task(0).is_none());
+    }
+
+    #[test]
+    fn remove_task_invalid_position() {
+        let board = super::Board::new("test board".to_string());
+        assert!(board.is_ok());
+
+        let mut b = board.unwrap();
+
+        let t = Task::new("task 1".to_string()).unwrap();
+        b.insert_task(0, &t);
+        b.remove_task(10);
+
+        assert!(b.get_task(0).is_some());
     }
 }
