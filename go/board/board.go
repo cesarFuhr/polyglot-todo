@@ -75,7 +75,10 @@ func (b *Board) UpdateTask(position int, t task.Task) error {
 }
 
 func (b *Board) RemoveTask(position int) {
-	if len(b.Tasks) == 0 || position >= len(b.Tasks)-1 {
+	if position >= len(b.Tasks) {
+		return
+	}
+	if len(b.Tasks) == 0 || position == len(b.Tasks)-1 {
 		b.Tasks = b.Tasks[:position]
 		return
 	}

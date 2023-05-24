@@ -178,6 +178,20 @@ func TestBoardRemoveTask(t *testing.T) {
 			t.Fatalf("expected title %v, received title %v", expectedTitle, actualTask.Title)
 		}
 	})
+
+	t.Run("ignores remove if position is invalid", func(t *testing.T) {
+		b := newBoard(t)
+
+		tsk := newTask(t, 1)
+		b.InsertTask(0, tsk)
+
+		b.RemoveTask(10)
+
+		expected := 1
+		if expected != len(b.GetTasks()) {
+			t.Fatalf("expected %v, received %v", expected, len(b.GetTasks()))
+		}
+	})
 }
 
 func TestBoardGetTask(t *testing.T) {
