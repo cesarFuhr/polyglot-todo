@@ -1,10 +1,13 @@
 use crate::task::Task;
+use serde::{Deserialize, Serialize};
 use std::time::Instant;
 
-#[derive(Debug)]
-struct Board {
+#[derive(Deserialize, Serialize, Debug)]
+pub struct Board {
     pub name: String,
+    #[serde(with = "serde_millis")]
     pub created_at: Instant,
+    #[serde(with = "serde_millis")]
     pub updated_at: Instant,
     pub tasks: Vec<Task>,
 }

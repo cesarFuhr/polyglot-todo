@@ -1,4 +1,8 @@
 use clap::Parser;
+use std::{
+    fs,
+    io::{self, BufReader},
+};
 
 mod board;
 mod task;
@@ -31,5 +35,49 @@ struct Args {
 fn main() {
     let args = Args::parse();
 
-    println!("==> {:?}", args.trailing)
+    let board = load_board(".todo.json".to_string()).unwrap();
+
+    println!("Board {:?}", board);
+    println!("Ok");
+
+    println!("{:?}", save_board(".todo.json".to_string(), board));
+}
+
+fn load_board(path: String) -> Result<board::Board, String> {
+    let result = fs::OpenOptions::new()
+        .read(true)
+        .write(true)
+        .create(true)
+        .open(path);
+    let file = match result {
+        Ok(f) => f,
+        Err(e) => return Err(e.to_string()),
+    };
+    let buf = BufReader::new(file);
+
+    let result = serde_json::from_reader(buf);
+    match result {
+        Ok(v) => v,
+        Err(e) => {
+            if e.is_eof() {
+                return board::Board::new("TODO".to_string());
+            }
+
+            Err(e.to_string())
+        }
+    }
+}
+
+fn save_board(path: String, b: board::Board) -> Result<(), String> {
+    let result = fs::OpenOptions::new().write(true).truncate(true).open(path);
+    let file = match result {
+        Ok(f) => f,
+        Err(e) => return Err(e.to_string()),
+    };
+
+    let result = serde_json::to_writer_pretty(file, &b);
+    match result {
+        Ok(()) => Ok(()),
+        Err(e) => Err(e.to_string()),
+    }
 }

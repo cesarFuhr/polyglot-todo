@@ -1,10 +1,13 @@
+use serde::{Deserialize, Serialize};
 use std::time::Instant;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Deserialize, Serialize, Debug)]
 pub struct Task {
     pub done: bool,
     pub title: String,
+    #[serde(with = "serde_millis")]
     pub created_at: Instant,
+    #[serde(with = "serde_millis")]
     pub done_at: Instant,
 }
 
