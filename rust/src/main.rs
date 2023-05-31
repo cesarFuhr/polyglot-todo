@@ -1,10 +1,8 @@
 use clap::Parser;
-use std::{
-    fs,
-    io::{self, BufReader},
-};
+use std::{fs, io::BufReader};
 
 mod board;
+mod commands;
 mod task;
 
 /// Simple todo app
@@ -16,7 +14,7 @@ struct Args {
     list: bool,
     /// Adds new task
     #[arg(short, group = "mutex", group = "needs_input", default_value_t = false)]
-    adds: bool,
+    add: bool,
     /// Marks a task as done
     #[arg(short, group = "mutex", default_value_t = 0)]
     done: usize,
@@ -35,12 +33,22 @@ struct Args {
 fn main() {
     let args = Args::parse();
 
-    let board = load_board(".todo.json".to_string()).unwrap();
+    let mut board = load_board(".todo.json".to_string()).unwrap();
 
-    println!("Board {:?}", board);
-    println!("Ok");
+    if args.list {
+        commands::list(&board);
+        return;
+    }
 
-    println!("{:?}", save_board(".todo.json".to_string(), board));
+    let mut result: Result<(), String> = Err("no command was selected".to_string());
+    if args.add {
+        result = commands::add(&mut board, args.trailing.join(" "));
+    }
+
+    match result {
+        Ok(()) => save_board(".todo.json".to_string(), board).unwrap(),
+        Err(e) => println!("{}", e),
+    }
 }
 
 fn load_board(path: String) -> Result<board::Board, String> {
@@ -55,9 +63,9 @@ fn load_board(path: String) -> Result<board::Board, String> {
     };
     let buf = BufReader::new(file);
 
-    let result = serde_json::from_reader(buf);
-    match result {
-        Ok(v) => v,
+    let v = serde_json::from_reader(buf);
+    match v {
+        Ok(v) => Ok(v),
         Err(e) => {
             if e.is_eof() {
                 return board::Board::new("TODO".to_string());
