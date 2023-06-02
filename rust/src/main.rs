@@ -45,6 +45,18 @@ fn main() {
         result = commands::add(&mut board, args.trailing.join(" "));
     }
 
+    if args.del > 0 {
+        result = commands::del(&mut board, args.del);
+    }
+
+    if args.done > 0 {
+        result = commands::done(&mut board, args.done);
+    }
+
+    if args.update > 0 {
+        result = commands::update(&mut board, args.update, args.trailing.join(" "));
+    }
+
     match result {
         Ok(()) => save_board(".todo.json".to_string(), board).unwrap(),
         Err(e) => println!("{}", e),
