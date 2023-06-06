@@ -25,7 +25,7 @@ func New(title string) (Task, error) {
 		Done:      false,
 		Title:     title,
 		CreatedAt: time.Now().Unix(),
-		DoneAt:    time.Time{}.Unix(),
+		DoneAt:    time.Now().Unix(),
 	}
 	return t, nil
 }
