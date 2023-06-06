@@ -34,6 +34,8 @@
                   p.go-mockery
                   p.rust-bin.stable.latest.default
                   p.rust-analyzer
+                  p.zig
+                  p.zls
                 ];
             };
         });
