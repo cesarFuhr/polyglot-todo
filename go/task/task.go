@@ -10,10 +10,10 @@ var (
 )
 
 type Task struct {
-	Done      bool
-	Title     string
-	CreatedAt time.Time
-	DoneAt    time.Time
+	Done      bool   `json:"done"`
+	Title     string `json:"title"`
+	CreatedAt int64  `json:"created_at"`
+	DoneAt    int64  `json:"done_at"`
 }
 
 func New(title string) (Task, error) {
@@ -24,8 +24,8 @@ func New(title string) (Task, error) {
 	t := Task{
 		Done:      false,
 		Title:     title,
-		CreatedAt: time.Now(),
-		DoneAt:    time.Time{},
+		CreatedAt: time.Now().Unix(),
+		DoneAt:    time.Time{}.Unix(),
 	}
 	return t, nil
 }

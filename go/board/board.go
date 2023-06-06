@@ -13,10 +13,10 @@ var (
 )
 
 type Board struct {
-	Name      string
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	Tasks     []task.Task
+	Name      string      `json:"name"`
+	CreatedAt int64       `json:"created_at"`
+	UpdatedAt int64       `json:"updated_at"`
+	Tasks     []task.Task `json:"tasks"`
 }
 
 func New(name string) (Board, error) {
@@ -26,8 +26,8 @@ func New(name string) (Board, error) {
 
 	b := Board{
 		Name:      name,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+		CreatedAt: time.Now().Unix(),
+		UpdatedAt: time.Now().Unix(),
 		Tasks:     []task.Task{},
 	}
 	return b, nil
@@ -60,7 +60,7 @@ func (b *Board) InsertTask(position int, t task.Task) {
 	result = append(result, right...)
 
 	b.Tasks = result
-	b.UpdatedAt = time.Now()
+	b.UpdatedAt = time.Now().Unix()
 }
 
 func (b *Board) UpdateTask(position int, t task.Task) error {
@@ -68,7 +68,7 @@ func (b *Board) UpdateTask(position int, t task.Task) error {
 		return ErrInvalidPosition
 	}
 
-	b.UpdatedAt = time.Now()
+	b.UpdatedAt = time.Now().Unix()
 	b.Tasks[position] = t
 
 	return nil
@@ -86,5 +86,5 @@ func (b *Board) RemoveTask(position int) {
 	left := b.Tasks[:position]
 	right := b.Tasks[position+1:]
 	b.Tasks = append(left, right...)
-	b.UpdatedAt = time.Now()
+	b.UpdatedAt = time.Now().Unix()
 }
