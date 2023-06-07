@@ -3,7 +3,7 @@ const t = @import("./task.zig");
 
 pub fn main() !void {
     // Prints to stderr (it's a shortcut based on `std.io.getStdErr()`)
-    const task = t.Task.create([_]u8{"ASD"});
+    const task = t.Task.create("ASD");
 
     std.debug.print("{!}\n", .{task});
 

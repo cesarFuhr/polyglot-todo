@@ -31,4 +31,5 @@ test "check for task title" {
 test "success" {
     const t = try Task.create("A title");
     try std.testing.expectEqualSlices(u8, "A title", t.title);
+    try std.testing.expectEqual(false, t.done);
 }
