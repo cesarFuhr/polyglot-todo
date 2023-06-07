@@ -6,11 +6,11 @@ pub const TaskCreateError = error{
 
 pub const Task = struct {
     done: bool,
-    title: []u8,
+    title: []const u8,
     created_at: i64,
     done_at: i64,
 
-    pub fn create(title: []u8) TaskCreateError!Task {
+    pub fn create(title: []const u8) TaskCreateError!Task {
         if (title.len == 0) {
             return error.RequiredTitle;
         }
@@ -26,4 +26,9 @@ pub const Task = struct {
 
 test "check for task title" {
     try std.testing.expectError(error.RequiredTitle, Task.create(""));
+}
+
+test "success" {
+    const t = try Task.create("A title");
+    try std.testing.expectEqualSlices(u8, "A title", t.title);
 }
