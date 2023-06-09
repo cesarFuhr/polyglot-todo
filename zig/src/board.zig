@@ -5,6 +5,8 @@ pub const BoardCreateError = error{
     RequireName,
 };
 
+pub const IvalidPosition = error{};
+
 pub const Board = struct {
     name: []const u8,
     created_at: i64,
@@ -29,6 +31,13 @@ pub const Board = struct {
             return self.tasks.append(t);
         }
         return self.tasks.insert(position, t);
+    }
+
+    pub fn getTask(self: *Board, position: usize) !task.Task {
+        if (position >= self.tasks.items.len) {
+            return error.InvalidPosition;
+        }
+        return self.tasks.items[position];
     }
 };
 
@@ -94,4 +103,22 @@ test "insert task - insert in the middle" {
     try std.testing.expectEqualSlices(u8, "task 0", b.tasks.items[0].title);
     try std.testing.expectEqualSlices(u8, "task 2", b.tasks.items[1].title);
     try std.testing.expectEqualSlices(u8, "task 1", b.tasks.items[2].title);
+}
+
+test "get task - get the first task" {
+    var b = try Board.create("name");
+    try std.testing.expect(0 == b.tasks.items.len);
+
+    const expected = try task.Task.create("task 0");
+    try b.insertTask(10, expected);
+
+    const actual = try b.getTask(0);
+    try std.testing.expectEqual(expected, actual);
+}
+
+test "get task - invalid position" {
+    var b = try Board.create("name");
+    try std.testing.expect(0 == b.tasks.items.len);
+
+    try std.testing.expectError(error.InvalidPosition, b.getTask(2));
 }
