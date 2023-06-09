@@ -48,6 +48,14 @@ pub const Board = struct {
         }
         _ = self.tasks.swapRemove(position);
     }
+
+    pub fn updateTask(self: *Board, position: usize, t: task.Task) !void {
+        if (position >= self.tasks.items.len) {
+            return error.InvalidPosition;
+        }
+        _ = self.tasks.swapRemove(position);
+        try self.tasks.insert(position, t);
+    }
 };
 
 test "create board - check for board name" {
@@ -151,4 +159,42 @@ test "delete task - invalid position" {
     b.deleteTask(0);
 
     try std.testing.expect(0 == b.tasks.items.len);
+}
+
+test "update task - success" {
+    var b = try Board.create("name");
+    try std.testing.expect(0 == b.tasks.items.len);
+
+    const t1 = try task.Task.create("task 0");
+    try b.insertTask(0, t1);
+
+    const updated = try task.Task.create("task updated");
+    try b.updateTask(0, updated);
+}
+
+test "update task - in the middle" {
+    var b = try Board.create("name");
+    try std.testing.expect(0 == b.tasks.items.len);
+
+    const t1 = try task.Task.create("task 0");
+    try b.insertTask(0, t1);
+
+    const t2 = try task.Task.create("task 1");
+    try b.insertTask(1, t2);
+
+    const t3 = try task.Task.create("task 2");
+    try b.insertTask(2, t3);
+
+    const updated = try task.Task.create("task updated");
+    try b.updateTask(1, updated);
+
+    try std.testing.expectEqual(updated, b.tasks.items[1]);
+}
+
+test "update task - invalid position" {
+    var b = try Board.create("name");
+    try std.testing.expect(0 == b.tasks.items.len);
+
+    const updated = try task.Task.create("task updated");
+    try std.testing.expectError(error.InvalidPosition, b.updateTask(1, updated));
 }
