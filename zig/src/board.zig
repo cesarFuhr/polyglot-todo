@@ -51,3 +51,47 @@ test "insert task - append to an empty list" {
     try std.testing.expect(1 == b.tasks.items.len);
     try std.testing.expectEqualSlices(u8, "task name", b.tasks.items[0].title);
 }
+
+test "insert task - insert two tasks to the end" {
+    var b = try Board.create("name");
+    try std.testing.expect(0 == b.tasks.items.len);
+
+    const t0 = try task.Task.create("task 0");
+    try b.insertTask(10, t0);
+
+    try std.testing.expect(1 == b.tasks.items.len);
+    try std.testing.expectEqualSlices(u8, "task 0", b.tasks.items[0].title);
+
+    const t1 = try task.Task.create("task 1");
+    try b.insertTask(10, t1);
+
+    try std.testing.expect(2 == b.tasks.items.len);
+    try std.testing.expectEqualSlices(u8, "task 0", b.tasks.items[0].title);
+    try std.testing.expectEqualSlices(u8, "task 1", b.tasks.items[1].title);
+}
+
+test "insert task - insert in the middle" {
+    var b = try Board.create("name");
+    try std.testing.expect(0 == b.tasks.items.len);
+
+    const t0 = try task.Task.create("task 0");
+    try b.insertTask(10, t0);
+
+    try std.testing.expect(1 == b.tasks.items.len);
+    try std.testing.expectEqualSlices(u8, "task 0", b.tasks.items[0].title);
+
+    const t1 = try task.Task.create("task 1");
+    try b.insertTask(10, t1);
+
+    try std.testing.expect(2 == b.tasks.items.len);
+    try std.testing.expectEqualSlices(u8, "task 0", b.tasks.items[0].title);
+    try std.testing.expectEqualSlices(u8, "task 1", b.tasks.items[1].title);
+
+    const t2 = try task.Task.create("task 2");
+    try b.insertTask(1, t2);
+
+    try std.testing.expect(3 == b.tasks.items.len);
+    try std.testing.expectEqualSlices(u8, "task 0", b.tasks.items[0].title);
+    try std.testing.expectEqualSlices(u8, "task 2", b.tasks.items[1].title);
+    try std.testing.expectEqualSlices(u8, "task 1", b.tasks.items[2].title);
+}
