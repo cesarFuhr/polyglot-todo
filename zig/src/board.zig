@@ -5,7 +5,9 @@ pub const BoardCreateError = error{
     RequireName,
 };
 
-pub const IvalidPosition = error{};
+pub const BoardTaskError = error{
+    InvalidPosition,
+};
 
 pub const Board = struct {
     name: []const u8,
@@ -33,11 +35,18 @@ pub const Board = struct {
         return self.tasks.insert(position, t);
     }
 
-    pub fn getTask(self: *Board, position: usize) !task.Task {
+    pub fn getTask(self: *Board, position: usize) BoardTaskError!task.Task {
         if (position >= self.tasks.items.len) {
             return error.InvalidPosition;
         }
         return self.tasks.items[position];
+    }
+
+    pub fn deleteTask(self: *Board, position: usize) void {
+        if (position >= self.tasks.items.len) {
+            return;
+        }
+        _ = self.tasks.swapRemove(position);
     }
 };
 
@@ -121,4 +130,25 @@ test "get task - invalid position" {
     try std.testing.expect(0 == b.tasks.items.len);
 
     try std.testing.expectError(error.InvalidPosition, b.getTask(2));
+}
+
+test "delete task - success" {
+    var b = try Board.create("name");
+    try std.testing.expect(0 == b.tasks.items.len);
+
+    const expected = try task.Task.create("task 0");
+    try b.insertTask(10, expected);
+
+    b.deleteTask(0);
+
+    try std.testing.expect(0 == b.tasks.items.len);
+}
+
+test "delete task - invalid position" {
+    var b = try Board.create("name");
+    try std.testing.expect(0 == b.tasks.items.len);
+
+    b.deleteTask(0);
+
+    try std.testing.expect(0 == b.tasks.items.len);
 }
