@@ -1,6 +1,6 @@
 const std = @import("std");
 
-pub fn build(b: *std.Build) void {
+pub fn build(b: *std.build.Builder) void {
     // Standard target options allows the person running `zig build` to choose
     // what target to build for. Here we do not override the defaults, which
     // means any target is allowed, and the default is native. Other options
@@ -11,15 +11,7 @@ pub fn build(b: *std.Build) void {
     // between Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall.
     const mode = b.standardReleaseOptions();
 
-    // Libs.
-    const clap_mod = b.addModule("clap", .{ .source_file = .{ .path = "libs/zig-clap/clap.zig" } });
-
-    // Initialize the exe.
     const exe = b.addExecutable("zig", "src/main.zig");
-
-    // Adding modules.
-    exe.addModule("clap", clap_mod);
-
     exe.setTarget(target);
     exe.setBuildMode(mode);
     exe.install();
