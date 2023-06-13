@@ -1,22 +1,34 @@
 const std = @import("std");
-const t = @import("./task.zig");
+const clap = @import("clap");
+
+const task = @import("./task.zig");
+const board = @import("./board.zig");
 
 pub fn main() !void {
-    // Prints to stderr (it's a shortcut based on `std.io.getStdErr()`)
-    const task = t.Task.create("ASD");
+    const params = comptime clap.parseParamsComptime(
+        \\-h, --help             Display this help and exit.
+        \\-l, --list
+        \\-a, --add <str>...     
+        \\-d, --done <usize>
+        \\-D, --del <usize>
+        \\-u, --update <string>...
+        \\
+    );
 
-    std.debug.print("{!}\n", .{task});
+    var diag = clap.Diagnostic{};
+    var res = clap.parse(clap.Help, &params, clap.parsers.default, .{
+        .diagnostic = &diag,
+    }) catch |err| {
+        // Report useful error and exit
+        diag.report(std.io.getStdErr().writer(), err) catch {};
+        return err;
+    };
+    defer res.deinit();
 
-    // stdout is for the actual output of your application, for example if you
-    // are implementing gzip, then only the compressed bytes should be sent to
-    // stdout, not any debugging messages.
-    const stdout_file = std.io.getStdOut().writer();
-    var bw = std.io.bufferedWriter(stdout_file);
-    const stdout = bw.writer();
-
-    try stdout.print("Run `zig build test` to run the tests.\n", .{});
-
-    try bw.flush(); // don't forget to flush!
+    if (res.args.help != 0)
+        std.debug.print("--help\n", .{});
+    if (res.args.add) |a|
+        std.debug.print("--add = {}\n", .{a});
 }
 
 test "simple test" {
