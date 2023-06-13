@@ -1,7 +1,7 @@
 {
   description = "Go 1.20 workspace";
 
-  inputs.nixpkgs.url = "nixpkgs/nixos-22.11";
+  inputs.nixpkgs.url = "nixpkgs/nixos-23.05";
   inputs.flake-utils.url = "github:numtide/flake-utils";
   inputs.rust-overlay.url = "github:oxalica/rust-overlay";
 
