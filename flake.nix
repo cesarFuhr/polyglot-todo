@@ -1,5 +1,5 @@
 {
-  description = "Go 1.20 workspace";
+  description = "Polyglot todo app";
 
   inputs.nixpkgs.url = "nixpkgs/nixos-23.05";
   inputs.flake-utils.url = "github:numtide/flake-utils";
@@ -36,6 +36,8 @@
                   p.rust-analyzer
                   p.zig
                   p.zls
+                  p.elixir
+                  p.elixir-ls
                 ];
             };
         });
