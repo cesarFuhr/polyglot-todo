@@ -24,8 +24,12 @@ pub const Board = struct {
             .name = name,
             .created_at = std.time.timestamp(),
             .updated_at = std.time.timestamp(),
-            .tasks = std.ArrayList(task.Task).init(std.heap.page_allocator),
+            .tasks = std.ArrayList(task.Task).init(std.heap.HeapAllocator),
         };
+    }
+
+    pub fn deinit(self: *Board) void {
+        self.tasks.deinit();
     }
 
     pub fn insertTask(self: *Board, position: usize, t: task.Task) !void {
@@ -63,7 +67,8 @@ test "create board - check for board name" {
 }
 
 test "create board - success" {
-    const b = try Board.create("A name");
+    var b = try Board.create("A name");
+    defer b.deinit();
     try std.testing.expectEqualSlices(u8, "A name", b.name);
 }
 

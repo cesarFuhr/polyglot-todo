@@ -25,15 +25,20 @@ pub fn main() !void {
     };
     defer res.deinit();
 
-    if (res.args.help != 0)
-        std.debug.print("--help\n", .{});
-    if (res.args.add) |a|
-        std.debug.print("--add = {}\n", .{a});
-}
+    var b = try board.Board.create("todo");
 
-test "simple test" {
-    var list = std.ArrayList(i32).init(std.testing.allocator);
-    defer list.deinit(); // try commenting this out and see if zig detects the memory leak!
-    try list.append(42);
-    try std.testing.expectEqual(@as(i32, 42), list.pop());
+    if (res.args.help != 0)
+        return clap.usage(std.io.getStdErr().writer(), clap.Help, &params);
+    for (res.args.add) |a| {
+        const t = try task.Task.create(a);
+        try b.insertTask(0, t);
+    }
+
+    const stdout = std.io.getStdOut().writer();
+
+    _ = try stdout.print("Board: {s}\n", .{b.name});
+    _ = try stdout.write("Tasks:\n");
+    for (b.tasks.items) |t| {
+        _ = try stdout.print("- {s}\n", .{t.title});
+    }
 }
