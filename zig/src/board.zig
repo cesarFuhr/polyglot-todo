@@ -14,8 +14,9 @@ pub const Board = struct {
     created_at: i64,
     updated_at: i64,
     tasks: std.ArrayList(task.Task),
+    allocator: std.mem.Allocator,
 
-    pub fn create(name: []const u8) BoardCreateError!Board {
+    pub fn create(name: []const u8, allocator: std.mem.Allocator) BoardCreateError!Board {
         if (name.len == 0) {
             return error.RequireName;
         }
@@ -24,7 +25,8 @@ pub const Board = struct {
             .name = name,
             .created_at = std.time.timestamp(),
             .updated_at = std.time.timestamp(),
-            .tasks = std.ArrayList(task.Task).init(std.heap.HeapAllocator),
+            .tasks = std.ArrayList(task.Task).init(allocator),
+            .allocator = allocator,
         };
     }
 
@@ -63,17 +65,42 @@ pub const Board = struct {
 };
 
 test "create board - check for board name" {
-    try std.testing.expectError(error.RequireName, Board.create(""));
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const allocator = gpa.allocator();
+    defer {
+        const deinit_status = gpa.deinit();
+        //fail test; can't try in defer as defer is executed after we return
+        if (deinit_status == .leak) @panic("we had a leak");
+    }
+
+    try std.testing.expectError(error.RequireName, Board.create("", allocator));
 }
 
 test "create board - success" {
-    var b = try Board.create("A name");
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const allocator = gpa.allocator();
+    defer {
+        const deinit_status = gpa.deinit();
+        //fail test; can't try in defer as defer is executed after we return
+        if (deinit_status == .leak) @panic("we had a leak");
+    }
+
+    var b = try Board.create("A name", allocator);
     defer b.deinit();
     try std.testing.expectEqualSlices(u8, "A name", b.name);
 }
 
 test "insert task - append to an empty list" {
-    var b = try Board.create("name");
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const allocator = gpa.allocator();
+    defer {
+        const deinit_status = gpa.deinit();
+        //fail test; can't try in defer as defer is executed after we return
+        if (deinit_status == .leak) @panic("we had a leak");
+    }
+
+    var b = try Board.create("name", allocator);
+    defer b.deinit();
     try std.testing.expect(0 == b.tasks.items.len);
 
     const t = try task.Task.create("task name");
@@ -84,7 +111,16 @@ test "insert task - append to an empty list" {
 }
 
 test "insert task - insert two tasks to the end" {
-    var b = try Board.create("name");
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const allocator = gpa.allocator();
+    defer {
+        const deinit_status = gpa.deinit();
+        //fail test; can't try in defer as defer is executed after we return
+        if (deinit_status == .leak) @panic("we had a leak");
+    }
+
+    var b = try Board.create("name", allocator);
+    defer b.deinit();
     try std.testing.expect(0 == b.tasks.items.len);
 
     const t0 = try task.Task.create("task 0");
@@ -102,7 +138,16 @@ test "insert task - insert two tasks to the end" {
 }
 
 test "insert task - insert in the middle" {
-    var b = try Board.create("name");
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const allocator = gpa.allocator();
+    defer {
+        const deinit_status = gpa.deinit();
+        //fail test; can't try in defer as defer is executed after we return
+        if (deinit_status == .leak) @panic("we had a leak");
+    }
+
+    var b = try Board.create("name", allocator);
+    defer b.deinit();
     try std.testing.expect(0 == b.tasks.items.len);
 
     const t0 = try task.Task.create("task 0");
@@ -128,7 +173,16 @@ test "insert task - insert in the middle" {
 }
 
 test "get task - get the first task" {
-    var b = try Board.create("name");
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const allocator = gpa.allocator();
+    defer {
+        const deinit_status = gpa.deinit();
+        //fail test; can't try in defer as defer is executed after we return
+        if (deinit_status == .leak) @panic("we had a leak");
+    }
+
+    var b = try Board.create("name", allocator);
+    defer b.deinit();
     try std.testing.expect(0 == b.tasks.items.len);
 
     const expected = try task.Task.create("task 0");
@@ -139,14 +193,32 @@ test "get task - get the first task" {
 }
 
 test "get task - invalid position" {
-    var b = try Board.create("name");
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const allocator = gpa.allocator();
+    defer {
+        const deinit_status = gpa.deinit();
+        //fail test; can't try in defer as defer is executed after we return
+        if (deinit_status == .leak) @panic("we had a leak");
+    }
+
+    var b = try Board.create("name", allocator);
+    defer b.deinit();
     try std.testing.expect(0 == b.tasks.items.len);
 
     try std.testing.expectError(error.InvalidPosition, b.getTask(2));
 }
 
 test "delete task - success" {
-    var b = try Board.create("name");
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const allocator = gpa.allocator();
+    defer {
+        const deinit_status = gpa.deinit();
+        //fail test; can't try in defer as defer is executed after we return
+        if (deinit_status == .leak) @panic("we had a leak");
+    }
+
+    var b = try Board.create("name", allocator);
+    defer b.deinit();
     try std.testing.expect(0 == b.tasks.items.len);
 
     const expected = try task.Task.create("task 0");
@@ -158,7 +230,16 @@ test "delete task - success" {
 }
 
 test "delete task - invalid position" {
-    var b = try Board.create("name");
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const allocator = gpa.allocator();
+    defer {
+        const deinit_status = gpa.deinit();
+        //fail test; can't try in defer as defer is executed after we return
+        if (deinit_status == .leak) @panic("we had a leak");
+    }
+
+    var b = try Board.create("name", allocator);
+    defer b.deinit();
     try std.testing.expect(0 == b.tasks.items.len);
 
     b.deleteTask(0);
@@ -167,7 +248,16 @@ test "delete task - invalid position" {
 }
 
 test "update task - success" {
-    var b = try Board.create("name");
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const allocator = gpa.allocator();
+    defer {
+        const deinit_status = gpa.deinit();
+        //fail test; can't try in defer as defer is executed after we return
+        if (deinit_status == .leak) @panic("we had a leak");
+    }
+
+    var b = try Board.create("name", allocator);
+    defer b.deinit();
     try std.testing.expect(0 == b.tasks.items.len);
 
     const t1 = try task.Task.create("task 0");
@@ -178,7 +268,16 @@ test "update task - success" {
 }
 
 test "update task - in the middle" {
-    var b = try Board.create("name");
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const allocator = gpa.allocator();
+    defer {
+        const deinit_status = gpa.deinit();
+        //fail test; can't try in defer as defer is executed after we return
+        if (deinit_status == .leak) @panic("we had a leak");
+    }
+
+    var b = try Board.create("name", allocator);
+    defer b.deinit();
     try std.testing.expect(0 == b.tasks.items.len);
 
     const t1 = try task.Task.create("task 0");
@@ -197,7 +296,16 @@ test "update task - in the middle" {
 }
 
 test "update task - invalid position" {
-    var b = try Board.create("name");
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const allocator = gpa.allocator();
+    defer {
+        const deinit_status = gpa.deinit();
+        //fail test; can't try in defer as defer is executed after we return
+        if (deinit_status == .leak) @panic("we had a leak");
+    }
+
+    var b = try Board.create("name", allocator);
+    defer b.deinit();
     try std.testing.expect(0 == b.tasks.items.len);
 
     const updated = try task.Task.create("task updated");

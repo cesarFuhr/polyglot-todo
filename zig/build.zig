@@ -6,32 +6,38 @@ pub fn build(b: *std.Build) !void {
 
     const exe = b.addExecutable(.{
         .name = "todo",
-        .root_source_file = .{ .path = "src/main.zig" },
+        .root_source_file = b.path("./src/main.zig"),
         .target = target,
         .optimize = optimize,
     });
 
-    const clap = b.dependency("clap", .{
+    const clap_dep = b.dependency("clap", .{
         .target = target,
         .optimize = optimize,
     });
     // clap has exported itself as clap
-    // now you are re-exporting clep
+    // now you are re-exporting clap
     // as a module in your project with the name clap
-    exe.addModule("clap", clap.module("clap"));
+    exe.root_module.addImport("clap", clap_dep.module("clap"));
 
     b.installArtifact(exe);
 
+    const run_cmd = b.addRunArtifact(exe);
+    run_cmd.step.dependOn(b.getInstallStep());
+    if (b.args) |args| {
+        run_cmd.addArgs(args);
+    }
+
+    const run_step = b.step("run", "Run the app");
+    run_step.dependOn(&run_cmd.step);
+
     const test_step = b.step("test", "Run unit tests");
     const unit_tests = b.addTest(.{
-        .root_source_file = .{ .path = "src/tests.zig" },
+        .root_source_file = b.path("src/tests.zig"),
         .target = target,
+        .optimize = optimize,
     });
 
     const run_unit_tests = b.addRunArtifact(unit_tests);
     test_step.dependOn(&run_unit_tests.step);
-
-    //const run_exe = b.addRunArtifact(exe);
-    //const run_step = b.step("run", "Run the application");
-    //run_step.dependOn(&run_exe.step);
 }

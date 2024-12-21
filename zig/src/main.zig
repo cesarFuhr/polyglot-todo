@@ -15,9 +15,18 @@ pub fn main() !void {
         \\
     );
 
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const allocator = gpa.allocator();
+    defer {
+        const deinit_status = gpa.deinit();
+        //fail test; can't try in defer as defer is executed after we return
+        if (deinit_status == .leak) @panic("we had a leak");
+    }
+
     var diag = clap.Diagnostic{};
     var res = clap.parse(clap.Help, &params, clap.parsers.default, .{
         .diagnostic = &diag,
+        .allocator = allocator,
     }) catch |err| {
         // Report useful error and exit
         diag.report(std.io.getStdErr().writer(), err) catch {};
@@ -25,7 +34,8 @@ pub fn main() !void {
     };
     defer res.deinit();
 
-    var b = try board.Board.create("todo");
+    var b = try board.Board.create("todo", allocator);
+    defer b.reinit();
 
     if (res.args.help != 0)
         return clap.usage(std.io.getStdErr().writer(), clap.Help, &params);

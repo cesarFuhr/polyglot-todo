@@ -1,12 +1,6 @@
-.{
-    .name = "todo",
-    .version = "0.0.1",
-
-    .dependencies = .{
-        .clap = .{
-            .url = "https://github.com/Hejsil/zig-clap/archive/0.7.0.tar.gz",
-            .hash = "1220f48518ce22882e102255ed3bcdb7aeeb4891f50b2cdd3bd74b5b2e24d3149ba2",
-        },
-    }
-}
-
+.{ .name = "todo", .version = "0.0.1", .paths = .{"./src"}, .dependencies = .{
+    .clap = .{
+        .url = "https://github.com/Hejsil/zig-clap/archive/refs/tags/0.9.1.tar.gz",
+        .hash = "122062d301a203d003547b414237229b09a7980095061697349f8bef41be9c30266b",
+    },
+} }

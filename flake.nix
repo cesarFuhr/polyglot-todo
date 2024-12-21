@@ -1,45 +1,50 @@
 {
   description = "Polyglot todo app";
 
-  inputs.nixpkgs.url = "nixpkgs/nixos-23.11";
+  inputs.nixpkgs.url = "nixpkgs/nixos-unstable";
   inputs.flake-utils.url = "github:numtide/flake-utils";
   inputs.rust-overlay.url = "github:oxalica/rust-overlay";
+  inputs.zig.url = "github:mitchellh/zig-overlay";
 
-  outputs = { self, nixpkgs, flake-utils, rust-overlay }:
+  outputs =
+    {
+      self,
+      nixpkgs,
+      flake-utils,
+      rust-overlay,
+      zig,
+    }:
     # Add dependencies that are only needed for development
-    flake-utils.lib.eachDefaultSystem
-      (system:
-        let
-          overlays = [ (import rust-overlay) ];
-          pkgs = import nixpkgs {
-            inherit system overlays;
+    flake-utils.lib.eachDefaultSystem (
+      system:
+      let
+        overlays = [
+          (import rust-overlay)
+          zig.overlays.default
+        ];
+        pkgs = import nixpkgs {
+          inherit system overlays;
+        };
+      in
+      {
+        devShells.default =
+          let
+            p = pkgs;
+          in
+          pkgs.mkShell {
+            buildInputs = [
+              p.act
+              p.go
+              p.gopls
+              p.rust-bin.stable.latest.default
+              p.rust-analyzer
+              p.zig
+              p.zls
+              p.elixir
+              p.elixir-ls
+              p.hare
+            ];
           };
-        in
-        {
-          devShells.default = let p = pkgs; in
-            pkgs.mkShell {
-              buildInputs =
-                [
-                  p.act
-                  p.go_1_20
-                  p.gopls
-                  p.gotools
-                  p.go-tools
-                  p.go-outline
-                  p.gocode
-                  p.gopkgs
-                  p.gocode-gomod
-                  p.godef
-                  p.golint
-                  p.go-mockery
-                  p.rust-bin.stable.latest.default
-                  p.rust-analyzer
-                  p.zig
-                  p.zls
-                  p.elixir
-                  p.elixir-ls
-                ];
-            };
-        });
+      }
+    );
 }
-
