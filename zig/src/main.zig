@@ -35,7 +35,7 @@ pub fn main() !void {
     defer res.deinit();
 
     var b = try board.Board.create("todo", allocator);
-    defer b.reinit();
+    defer b.deinit();
 
     if (res.args.help != 0)
         return clap.usage(std.io.getStdErr().writer(), clap.Help, &params);
