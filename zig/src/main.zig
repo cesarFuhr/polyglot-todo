@@ -34,7 +34,15 @@ pub fn main() !void {
     };
     defer res.deinit();
 
-    var b = try board.Board.create("todo", allocator);
+    // Grab a file stream.
+    const flags = std.fs.File.OpenFlags{
+        .mode = .read_write,
+    };
+    var file = try std.fs.cwd().openFile("todo.json", flags);
+    defer file.close();
+
+    const buffered = std.io.bufferedReader(file.reader());
+    var b = try board.Board.load(buffered, allocator);
     defer b.deinit();
 
     if (res.args.help != 0)

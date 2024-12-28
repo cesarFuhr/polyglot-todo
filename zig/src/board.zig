@@ -30,6 +30,25 @@ pub const Board = struct {
         };
     }
 
+    pub fn load(reader: anytype, allocator: std.mem.Allocator) anyerror!Board {
+        // Convert it to a json reader.
+        var jsonReader = std.json.reader(allocator, reader);
+        defer jsonReader.deinit();
+
+        const parsed = try std.json.parseFromTokenSource(Board, allocator, &jsonReader, .{
+            .ignore_unknown_fields = true,
+        });
+        defer parsed.deinit();
+
+        const board = parsed.value;
+
+        if (board.name.len == 0) {
+            return error.RequireName;
+        }
+
+        return board;
+    }
+
     pub fn deinit(self: *Board) void {
         self.tasks.deinit();
     }
