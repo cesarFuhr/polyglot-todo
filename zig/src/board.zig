@@ -25,16 +25,16 @@ pub const Board = struct {
     tasks: std.ArrayList(task.Task),
     allocator: std.mem.Allocator,
 
-    pub fn create(name: []const u8, allocator: std.mem.Allocator) BoardCreateError!Board {
+    pub fn init(name: []const u8, allocator: std.mem.Allocator) BoardCreateError!Board {
         if (name.len == 0) {
             return error.RequireName;
         }
 
         const tasks = std.ArrayList(task.Task).init(allocator);
-        const dupedName = try allocator.dupe(u8, name);
+        const owned_name = try allocator.dupe(u8, name);
 
         return .{
-            .name = dupedName,
+            .name = owned_name,
             .created_at = std.time.timestamp(),
             .updated_at = std.time.timestamp(),
             .tasks = tasks,
@@ -44,25 +44,25 @@ pub const Board = struct {
 
     pub fn decode(reader: anytype, allocator: std.mem.Allocator) anyerror!Board {
         // Convert it to a json reader.
-        var jsonReader = std.json.reader(allocator, reader);
-        defer jsonReader.deinit();
+        var json_reader = std.json.reader(allocator, reader);
+        defer json_reader.deinit();
 
-        const parsed = try std.json.parseFromTokenSource(serializableBoard, allocator, &jsonReader, .{
+        const parsed = try std.json.parseFromTokenSource(serializableBoard, allocator, &json_reader, .{
             .ignore_unknown_fields = true,
             .allocate = std.json.AllocWhen.alloc_always,
         });
         defer parsed.deinit();
 
         const board = parsed.value;
-        const tasks = try allocator.dupe(task.Task, board.tasks);
+        const owned_tasks = try allocator.dupe(task.Task, board.tasks);
 
-        const dupedName = try allocator.dupe(u8, board.name);
+        const owned_name = try allocator.dupe(u8, board.name);
 
         return .{
-            .name = dupedName,
+            .name = owned_name,
             .created_at = board.created_at,
             .updated_at = board.updated_at,
-            .tasks = std.ArrayList(task.Task).fromOwnedSlice(allocator, tasks),
+            .tasks = std.ArrayList(task.Task).fromOwnedSlice(allocator, owned_tasks),
             .allocator = allocator,
         };
     }
@@ -71,14 +71,11 @@ pub const Board = struct {
         var clonedTasks = try self.tasks.clone();
         defer clonedTasks.deinit();
 
-        const taskSlice = try clonedTasks.toOwnedSlice();
-        defer self.allocator.free(taskSlice);
-
         const serializable = serializableBoard{
             .name = self.name,
             .created_at = self.created_at,
             .updated_at = self.updated_at,
-            .tasks = taskSlice,
+            .tasks = self.tasks.items,
         };
 
         return std.json.stringify(serializable, .{ .whitespace = .indent_2 }, writer);
@@ -120,11 +117,11 @@ pub const Board = struct {
 };
 
 test "create board - check for board name" {
-    try testing.expectError(error.RequireName, Board.create("", testing.allocator));
+    try testing.expectError(error.RequireName, Board.init("", testing.allocator));
 }
 
 test "create board - success" {
-    var b = try Board.create("A name", testing.allocator);
+    var b = try Board.init("A name", testing.allocator);
     defer b.deinit();
     try testing.expectEqualSlices(u8, "A name", b.name);
 }
@@ -175,13 +172,16 @@ test "load board - fail missing field" {
 }
 
 test "write board without tasks - success" {
-    var b = try Board.create("A name", testing.allocator);
+    var b = try Board.init("A name", testing.allocator);
     defer b.deinit();
     b.created_at = 1735609291;
     b.updated_at = 1735609291;
 
-    var list = std.ArrayList(u8).init(testing.allocator);
-    try b.encode(list.writer());
+    var buf: [500]u8 = undefined;
+    var fba = std.heap.FixedBufferAllocator.init(&buf);
+    var string = std.ArrayList(u8).init(fba.allocator());
+    defer string.deinit();
+    try b.encode(string.writer());
 
     const expected =
         \\{
@@ -192,12 +192,12 @@ test "write board without tasks - success" {
         \\}
     ;
 
-    const actual = try list.toOwnedSlice();
+    const actual = try string.toOwnedSlice();
     try testing.expectEqualStrings(expected, actual);
 }
 
 test "insert task - append to an empty list" {
-    var b = try Board.create("name", testing.allocator);
+    var b = try Board.init("name", testing.allocator);
     defer b.deinit();
     try testing.expect(0 == b.tasks.items.len);
 
@@ -209,7 +209,7 @@ test "insert task - append to an empty list" {
 }
 
 test "insert task - insert two tasks to the end" {
-    var b = try Board.create("name", testing.allocator);
+    var b = try Board.init("name", testing.allocator);
     defer b.deinit();
     try testing.expect(0 == b.tasks.items.len);
 
@@ -228,7 +228,7 @@ test "insert task - insert two tasks to the end" {
 }
 
 test "insert task - insert in the middle" {
-    var b = try Board.create("name", testing.allocator);
+    var b = try Board.init("name", testing.allocator);
     defer b.deinit();
     try testing.expect(0 == b.tasks.items.len);
 
@@ -255,7 +255,7 @@ test "insert task - insert in the middle" {
 }
 
 test "get task - get the first task" {
-    var b = try Board.create("name", testing.allocator);
+    var b = try Board.init("name", testing.allocator);
     defer b.deinit();
     try testing.expect(0 == b.tasks.items.len);
 
@@ -267,7 +267,7 @@ test "get task - get the first task" {
 }
 
 test "get task - invalid position" {
-    var b = try Board.create("name", testing.allocator);
+    var b = try Board.init("name", testing.allocator);
     defer b.deinit();
     try testing.expect(0 == b.tasks.items.len);
 
@@ -275,7 +275,7 @@ test "get task - invalid position" {
 }
 
 test "delete task - success" {
-    var b = try Board.create("name", testing.allocator);
+    var b = try Board.init("name", testing.allocator);
     defer b.deinit();
     try testing.expect(0 == b.tasks.items.len);
 
@@ -288,7 +288,7 @@ test "delete task - success" {
 }
 
 test "delete task - invalid position" {
-    var b = try Board.create("name", testing.allocator);
+    var b = try Board.init("name", testing.allocator);
     defer b.deinit();
     try testing.expect(0 == b.tasks.items.len);
 
@@ -298,7 +298,7 @@ test "delete task - invalid position" {
 }
 
 test "update task - success" {
-    var b = try Board.create("name", testing.allocator);
+    var b = try Board.init("name", testing.allocator);
     defer b.deinit();
     try testing.expect(0 == b.tasks.items.len);
 
@@ -310,7 +310,7 @@ test "update task - success" {
 }
 
 test "update task - in the middle" {
-    var b = try Board.create("name", testing.allocator);
+    var b = try Board.init("name", testing.allocator);
     defer b.deinit();
     try testing.expect(0 == b.tasks.items.len);
 
@@ -330,7 +330,7 @@ test "update task - in the middle" {
 }
 
 test "update task - invalid position" {
-    var b = try Board.create("name", testing.allocator);
+    var b = try Board.init("name", testing.allocator);
     defer b.deinit();
     try testing.expect(0 == b.tasks.items.len);
 
