@@ -111,8 +111,8 @@ pub const Board = struct {
         if (position >= self.tasks.items.len) {
             return error.InvalidPosition;
         }
-        _ = self.tasks.swapRemove(position);
-        try self.tasks.insert(position, t);
+        const updated: [1]task.Task = .{t};
+        self.tasks.replaceRangeAssumeCapacity(position, 1, &updated);
     }
 };
 
@@ -196,12 +196,60 @@ test "write board without tasks - success" {
     try testing.expectEqualStrings(expected, actual);
 }
 
+test "write board with tasks - success" {
+    var b = try Board.init("A name", testing.allocator);
+    defer b.deinit();
+    b.created_at = 1735609291;
+    b.updated_at = 1735609291;
+
+    var t = try task.Task.init("a task");
+    t.created_at = 1735674920;
+    t.done_at = 1735674920;
+    try b.insertTask(0, t);
+
+    var t2 = try task.Task.init("another task");
+    t2.created_at = 1735674920;
+    t2.done_at = 1735674920;
+    try b.insertTask(0, t2);
+
+    var buf: [1000]u8 = undefined;
+    var fba = std.heap.FixedBufferAllocator.init(&buf);
+    var string = std.ArrayList(u8).init(fba.allocator());
+    defer string.deinit();
+    try b.encode(string.writer());
+
+    const expected =
+        \\{
+        \\  "name": "A name",
+        \\  "created_at": 1735609291,
+        \\  "updated_at": 1735609291,
+        \\  "tasks": [
+        \\    {
+        \\      "done": false,
+        \\      "title": "another task",
+        \\      "created_at": 1735674920,
+        \\      "done_at": 1735674920
+        \\    },
+        \\    {
+        \\      "done": false,
+        \\      "title": "a task",
+        \\      "created_at": 1735674920,
+        \\      "done_at": 1735674920
+        \\    }
+        \\  ]
+        \\}
+    ;
+
+    const actual = try string.toOwnedSlice();
+    try testing.expectEqualStrings(expected, actual);
+}
+
 test "insert task - append to an empty list" {
     var b = try Board.init("name", testing.allocator);
     defer b.deinit();
     try testing.expect(0 == b.tasks.items.len);
 
-    const t = try task.Task.create("task name");
+    const t = try task.Task.init("task name");
     try b.insertTask(0, t);
 
     try testing.expect(1 == b.tasks.items.len);
@@ -213,13 +261,13 @@ test "insert task - insert two tasks to the end" {
     defer b.deinit();
     try testing.expect(0 == b.tasks.items.len);
 
-    const t0 = try task.Task.create("task 0");
+    const t0 = try task.Task.init("task 0");
     try b.insertTask(10, t0);
 
     try testing.expect(1 == b.tasks.items.len);
     try testing.expectEqualSlices(u8, "task 0", b.tasks.items[0].title);
 
-    const t1 = try task.Task.create("task 1");
+    const t1 = try task.Task.init("task 1");
     try b.insertTask(10, t1);
 
     try testing.expect(2 == b.tasks.items.len);
@@ -232,20 +280,20 @@ test "insert task - insert in the middle" {
     defer b.deinit();
     try testing.expect(0 == b.tasks.items.len);
 
-    const t0 = try task.Task.create("task 0");
+    const t0 = try task.Task.init("task 0");
     try b.insertTask(10, t0);
 
     try testing.expect(1 == b.tasks.items.len);
     try testing.expectEqualSlices(u8, "task 0", b.tasks.items[0].title);
 
-    const t1 = try task.Task.create("task 1");
+    const t1 = try task.Task.init("task 1");
     try b.insertTask(10, t1);
 
     try testing.expect(2 == b.tasks.items.len);
     try testing.expectEqualSlices(u8, "task 0", b.tasks.items[0].title);
     try testing.expectEqualSlices(u8, "task 1", b.tasks.items[1].title);
 
-    const t2 = try task.Task.create("task 2");
+    const t2 = try task.Task.init("task 2");
     try b.insertTask(1, t2);
 
     try testing.expect(3 == b.tasks.items.len);
@@ -259,7 +307,7 @@ test "get task - get the first task" {
     defer b.deinit();
     try testing.expect(0 == b.tasks.items.len);
 
-    const expected = try task.Task.create("task 0");
+    const expected = try task.Task.init("task 0");
     try b.insertTask(10, expected);
 
     const actual = try b.getTask(0);
@@ -279,7 +327,7 @@ test "delete task - success" {
     defer b.deinit();
     try testing.expect(0 == b.tasks.items.len);
 
-    const expected = try task.Task.create("task 0");
+    const expected = try task.Task.init("task 0");
     try b.insertTask(10, expected);
 
     b.deleteTask(0);
@@ -302,10 +350,10 @@ test "update task - success" {
     defer b.deinit();
     try testing.expect(0 == b.tasks.items.len);
 
-    const t1 = try task.Task.create("task 0");
+    const t1 = try task.Task.init("task 0");
     try b.insertTask(0, t1);
 
-    const updated = try task.Task.create("task updated");
+    const updated = try task.Task.init("task updated");
     try b.updateTask(0, updated);
 }
 
@@ -314,16 +362,16 @@ test "update task - in the middle" {
     defer b.deinit();
     try testing.expect(0 == b.tasks.items.len);
 
-    const t1 = try task.Task.create("task 0");
+    const t1 = try task.Task.init("task 0");
     try b.insertTask(0, t1);
 
-    const t2 = try task.Task.create("task 1");
+    const t2 = try task.Task.init("task 1");
     try b.insertTask(1, t2);
 
-    const t3 = try task.Task.create("task 2");
+    const t3 = try task.Task.init("task 2");
     try b.insertTask(2, t3);
 
-    const updated = try task.Task.create("task updated");
+    const updated = try task.Task.init("task updated");
     try b.updateTask(1, updated);
 
     try testing.expectEqual(updated, b.tasks.items[1]);
@@ -334,6 +382,6 @@ test "update task - invalid position" {
     defer b.deinit();
     try testing.expect(0 == b.tasks.items.len);
 
-    const updated = try task.Task.create("task updated");
+    const updated = try task.Task.init("task updated");
     try testing.expectError(error.InvalidPosition, b.updateTask(1, updated));
 }
